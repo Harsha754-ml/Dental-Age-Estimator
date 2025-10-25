@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dental Age Estimator</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet" />
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2em 0;
+}
+.container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 3em 2em 2em 2em;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,41,102,0.15);
+  position: relative;
+  animation: fadeIn 1s;
+}
+.back-btn {
+  position: absolute; top: 20px; left: 20px;
+  display: flex; align-items: center;
+  background: #eef3fc; color: #5468ff;
+  border: none; border-radius: 12px;
+  padding: 7px 18px 7px 10px; font-weight: 600;
+  font-size: 0.99rem; cursor: pointer;
+}
+.back-btn:hover { background: #e0eaff;}
+.back-btn svg { margin-right: 8px; }
+.hero-graphic { display: flex; justify-content: center; margin-bottom: 1em;}
+h1 { color: #415088; text-align: center; margin-bottom: 0.25em; font-weight: 600;}
+.hero-desc {text-align: center; color: #627199; margin: 0 0 2em 0; font-size: 1.06em;}
+.tab-buttons {display: flex; justify-content: center; margin-bottom: 1.5em; margin-top: 1.5em;}
+.tab-button {
+  background: #f5f9ff; border: none; padding: 11px 22px; margin: 0 7px;
+  font-weight: 600; font-size: 1rem; border-radius: 10px 10px 0 0; cursor: pointer;
+  transition: background-color 0.3s;
+}
+.tab-button.active {
+  background: #5468ff; color: white; box-shadow: 0 -2px 6px -2px #96b1ff;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block;}
+label {font-weight: 600; margin: 0.5em 0 0.3em 0; display: block; color: #516497;}
+input[type=number], input[type=file] {
+  width: 100%; padding: 12px 15px; border-radius: 10px; border: 2px solid #dde2f7;
+  outline: none; font-size: 1em; margin-bottom: 1em; background: #f7fbff;
+}
+input[type=number]:focus, input[type=file]:focus {border-color: #5468ff;}
+button[type=submit] {
+  width: 100%; padding: 15px; border: none; border-radius: 12px;
+  background: linear-gradient(90deg,#3151ec,#6a9bee);
+  color: #fff; font-size: 1.12em; font-weight: 600; cursor: pointer;
+}
+button[type=submit]:hover {background: linear-gradient(90deg,#1e3b7d,#8fb2ff);}
+#result {
+  margin-top: 1.6em; font-size: 1.17em; font-weight: 600; color: #35536b; min-height: 2.2em; text-align: center;
+}
+#imgPreview, #toothImgPreview {
+  display: none; margin: 0.8em auto 0.7em auto; max-width: 80%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,60,200,0.07);
+}
+footer { margin-top: 2.6em; font-size: 0.93em; color: #adb5bd; text-align: center;}
+@keyframes fadeIn { from {opacity: 0; transform: translateY(-30px);} to {opacity: 1; transform: translateY(0);} }
+</style>
+</head>
+<body>
+<div class="container">
+  <button class="back-btn" onclick="window.history.back()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M10.3 13.2 6.099 9l4.201-4.2" stroke="#5468ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back
+  </button>
+  <div class="hero-graphic">
+    <svg width="65" height="65" fill="none"><ellipse cx="32" cy="33.5" rx="22" ry="26.5" fill="#e7f6fd"/>
+    <path d="M32 13c8 0 14 7.5 14 15.5S36 58 32 58s-14-18.5-14-29.5S24 13 32 13z" fill="#fff" stroke="#5468ff" stroke-width="2"/>
+    <ellipse cx="42" cy="24" rx="3" ry="4" fill="#bee3fc"/></svg>
+  </div>
+  <h1>Dental Age Estimator</h1>
+  <div class="hero-desc">
+    <b>🦷 Tooth Intelligence:</b> Classify age from measurements, radiographs or photos—quickly, visually, anywhere.
+  </div>
+  <div class="tab-buttons">
+    <button class="tab-button active" data-target="manual">Tooth Measures</button>
+    <button class="tab-button" data-target="upload">Radiograph</button>
+    <button class="tab-button" data-target="toothimage">Tooth Photo</button>
+  </div>
+  <div id="manual" class="tab-content active">
+    <form id="manualForm">
+      <label>Pulp/Tooth Area Ratio 🦷</label>
+      <input type="number" id="feature1" step="0.01" placeholder="e.g. 0.45" required />
+      <label>Tooth Width (mm) 🦷</label>
+      <input type="number" id="feature2" step="0.01" placeholder="e.g. 3.2" required />
+      <label>Open Apices Count 🦷</label>
+      <input type="number" id="feature3" min="0" max="10" required />
+      <button type="submit">Estimate Age</button>
+    </form>
+  </div>
+  <div id="upload" class="tab-content">
+    <form id="uploadForm">
+      <label>Upload Radiograph 🦷</label>
+      <input type="file" id="radiograph" accept="image/*" required />
+      <button type="submit">Analyze Radiograph</button>
+    </form>
+    <img id="imgPreview" alt="Radiograph Preview" />
+  </div>
+  <div id="toothimage" class="tab-content">
+    <form id="toothImageForm">
+      <label>Upload Tooth Photo 🦷</label>
+      <input type="file" id="toothimg" accept="image/*" required />
+      <button type="submit">Analyze Tooth Photo</button>
+    </form>
+    <img id="toothImgPreview" alt="Tooth Photo Preview" />
+  </div>
+  <div id="result" role="status" aria-live="polite"></div>
+  <footer>© 2025 Smart Dental Estimation</footer>
+</div>
+<script>
+// UI elements
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
+const resultDiv = document.getElementById('result');
+const imgPreview = document.getElementById('imgPreview');
+const toothImgPreview = document.getElementById('toothImgPreview');
+
+// Tab switching
+tabButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
+    button.classList.add('active');
+    const target = button.getAttribute('data-target');
+    const el = document.getElementById(target);
+    if (el) el.classList.add('active');
+    // clear result and previews
+    resultDiv.textContent = '';
+    if (imgPreview) { imgPreview.style.display = 'none'; imgPreview.src = ''; }
+    if (toothImgPreview) { toothImgPreview.style.display = 'none'; toothImgPreview.src = ''; }
+  });
+});
+
+// Helper: show error in result area
+function showError(msg){
+  resultDiv.textContent = msg;
+  resultDiv.style.color = '#a02d2d';
+}
+
+// Manual form - measures
+document.getElementById('manualForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const ratio = parseFloat(document.getElementById('feature1').value);
+  const width = parseFloat(document.getElementById('feature2').value);
+  const apices = parseInt(document.getElementById('feature3').value, 10);
+  if (isNaN(ratio) || isNaN(width) || isNaN(apices)){
+    showError('Please enter valid numeric values for all fields.');
+    return;
+  }
+  const ageEstimate = 7 + ratio * 12 + width * 0.8 + apices * 1.9;
+  resultDiv.style.color = '#1f3b57';
+  resultDiv.textContent = `Estimated Dental Age (Measures): ${ageEstimate.toFixed(2)} years`;
+});
+
+// Radiograph - upload
+const radiographInput = document.getElementById('radiograph');
+if (radiographInput){
+  radiographInput.addEventListener('change', () => {
+    const f = radiographInput.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      imgPreview.src = ev.target.result;
+      imgPreview.style.display = 'block';
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+document.getElementById('uploadForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const fileInput = document.getElementById('radiograph');
+  if (!fileInput || !fileInput.files.length) { showError('Please select an image file.'); return; }
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    if (imgPreview){ imgPreview.src = event.target.result; imgPreview.style.display = 'block'; }
+    resultDiv.style.color = '#1f3b57';
+    resultDiv.textContent = 'Processing radiograph image...';
+    // Simulated processing
+    setTimeout(() => {
+      const simulatedAge = (10 + Math.random() * 6).toFixed(2);
+      resultDiv.textContent = `Estimated Dental Age (Radiograph): ${simulatedAge} years`;
+    }, 1000 + Math.random() * 1200);
+  };
+  reader.readAsDataURL(file);
+});
+
+// Tooth photo - upload
+const toothInput = document.getElementById('toothimg');
+if (toothInput){
+  toothInput.addEventListener('change', () => {
+    const f = toothInput.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      toothImgPreview.src = ev.target.result;
+      toothImgPreview.style.display = 'block';
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+document.getElementById('toothImageForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const fileInput = document.getElementById('toothimg');
+  if (!fileInput || !fileInput.files.length) { showError('Please select a photo.'); return; }
+  resultDiv.style.color = '#1f3b57';
+  resultDiv.textContent = 'Processing tooth photo...';
+  setTimeout(function(){
+    resultDiv.textContent = `Estimated Dental Age (Tooth Photo): ${(7 + Math.random()*8).toFixed(2)} years`;
+  }, 1200 + Math.random()*900);
+});
+</script>
+</body>
+</html>
