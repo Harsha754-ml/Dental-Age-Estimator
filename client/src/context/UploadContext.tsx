@@ -9,6 +9,7 @@ interface AnalysisResult {
     tooth: string;
     stage: string;
     score: number;
+    usedForEstimation: boolean;
   }>;
   features: {
     rootLength: string;
@@ -65,36 +66,39 @@ export function UploadProvider({ children }: { children: ReactNode }) {
   };
 
   const startAnalysis = async (): Promise<void> => {
+    if (!session.file) {
+      console.error("No file to analyze.");
+      return;
+    }
+
     setSession((prev) => ({ ...prev, isAnalyzing: true }));
 
-    // todo: remove mock functionality - replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const formData = new FormData();
+      formData.append("image", session.file);
 
-    const mockResult: AnalysisResult = {
-      estimatedAge: 14.7,
-      ageRange: { min: 13.8, max: 15.6 },
-      confidence: 94.2,
-      analyzedTeeth: [
-        { tooth: "Lower Left 7 (37)", stage: "F", score: 96 },
-        { tooth: "Lower Left 6 (36)", stage: "G", score: 92 },
-        { tooth: "Lower Left 5 (35)", stage: "G", score: 89 },
-        { tooth: "Lower Right 7 (47)", stage: "F", score: 94 },
-      ],
-      features: {
-        rootLength: "Equal to crown height",
-        crownFormation: "Complete",
-        apexClosure: "Partially open",
-        eruptionStatus: "Fully erupted",
-      },
-      processingTime: "1.8s",
-    };
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
 
-    setSession((prev) => ({
-      ...prev,
-      isAnalyzing: false,
-      analysisComplete: true,
-      result: mockResult,
-    }));
+      if (!response.ok) {
+        throw new Error(`API call failed with status: ${response.status}`);
+      }
+
+      const result: AnalysisResult = await response.json();
+
+      setSession((prev) => ({
+        ...prev,
+        isAnalyzing: false,
+        analysisComplete: true,
+        result,
+      }));
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      // Optionally, update the UI to show an error state
+      setSession((prev) => ({ ...prev, isAnalyzing: false, analysisComplete: false, result: null }));
+    }
   };
 
   const clearSession = () => {
